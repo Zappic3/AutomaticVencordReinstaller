@@ -2,7 +2,7 @@ Are you tired of Vencord disappearing after a new Discord Update? Going on the V
 
 # Automatic Vencord Installer
 
-This repository contains a Batch Script that automates the process of downloading, running, and cleaning up the [Vencord CLI](https://github.com/Vendicated/Vencord).
+This repository contains a Batch Script that automates the process of downloading, running, and cleaning up the latest version of the [Vencord CLI](https://github.com/Vendicated/Vencord).
 
 ## Features
 
