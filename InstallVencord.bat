@@ -15,7 +15,7 @@ set "startDiscord=stable"
 
 :: Wether to keep the Terminal open or close it after the script finishes
 :: 1 = true, 0 = false
-set "keepTerminalOpen=0"
+set "keepTerminalOpen=1"
 
 
 :: === Find Discord Installation Directory ===
@@ -52,11 +52,16 @@ for %%i in (%installList%) do (
     if not exist "!currentPath!\" (
         echo [WARN] !discordNames_%%i! folder not found
     ) else (
+
+        :: === Update Discord before patching ===
+        echo [INFO] Starting Discord Updater
+        start /wait "" "!currentPath!\Update.exe"
+        echo [INFO] Update finished.
+
         set "highestAppFolder="
         set "highestVersion="
 
         for /d %%F in ("!currentPath!\app-*") do (
-            echo [DEBUG] highestAppFolder=!highestAppFolder!
             echo [INFO] Checking folder: %%F
             set "folderName=%%~nxF"
             set "version=!folderName:~4!"
