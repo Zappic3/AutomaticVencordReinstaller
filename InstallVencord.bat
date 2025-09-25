@@ -6,11 +6,12 @@ setlocal enabledelayedexpansion
 :: set all Discord installation locations where vencord should be installed
 :: seperated by spaces. Exapmple: "installList=stable ptb canary"
 :: if the installation doesnt exist, it gets skipped. 
-set "installList=stable ptb"
+set "installList=stable"
 
-:: Wether to Autostart Discord after updating or not
-:: 1 = true, 0 = false
-set "startDiscord=1"
+:: Which version of discord to autostart
+:: (Must be a version in the installList above)
+:: options: none, stable, ptb, canary
+set "startDiscord=stable"
 
 :: Wether to keep the Terminal open or close it after the script finishes
 :: 1 = true, 0 = false
@@ -23,6 +24,11 @@ set "discordNames_ptb=DiscordPTB"
 set "discordNames_canary=DiscordCanary"
 ::set "discordNames_dev=DiscordDevelopment"
 
+set "discordDir_stable="
+set "discordDir_ptb="
+set "discordDir_canary="
+::set "discordDir_dev="
+
 call :main
 exit /b
 
@@ -34,10 +40,12 @@ if not exist "%LOCALAPPDATA%\" (
     goto :end
 )
 
-set "foldersToPatch=uadhosiuhoi"
+set "foldersToPatch="
 set "errorOccurred=0"
 
 for %%i in (%installList%) do (
+
+
     set "currentPath=%LOCALAPPDATA%\!discordNames_%%i!"
     echo [INFO] Checking !currentPath!
 
@@ -48,6 +56,7 @@ for %%i in (%installList%) do (
         set "highestVersion="
 
         for /d %%F in ("!currentPath!\app-*") do (
+            echo [DEBUG] highestAppFolder=!highestAppFolder!
             echo [INFO] Checking folder: %%F
             set "folderName=%%~nxF"
             set "version=!folderName:~4!"
@@ -66,6 +75,8 @@ for %%i in (%installList%) do (
 
         if defined highestAppFolder (
             echo [INFO] Highest !discordNames_%%i! version folder: !highestAppFolder!
+            set "discordDir_%%i=!highestAppFolder!"
+            :: Check if Vencord is already installed
             if exist "!highestAppFolder!\resources\_app.asar" (
                 echo [INFO] Vencord already installed in !highestAppFolder!
             ) else (
@@ -129,14 +140,32 @@ echo [INFO] Done.
 
 :end
 
+:: If an error occurred earlier, stop here
+if "%errorOccurred%"=="1" (
+    echo [ERROR] Script ended with errors.
+    if "%keepTerminalOpen%"=="1" pause
+    exit /b 1
+)
 
-if "%errorOccurred%"=="1"  (
-    pause
+:: Only try to start Discord if configured
+if /i "%startDiscord%"=="none" (
+    echo [INFO] Skipping Discord autostart.
 ) else (
+    :: Use a separate variable for the final path to avoid delayed expansion issues
+    set "finalDiscordDir="
     
+    :: Use a for loop to retrieve the correct value
+    for %%i in (%startDiscord%) do (
+        set "finalDiscordDir=!discordDir_%%i!"
+    )
+    
+    if defined finalDiscordDir (
+        echo [INFO] Starting Discord at !finalDiscordDir!
+        start "" "!finalDiscordDir!\Discord.exe"
+    ) else (
+        echo [ERROR] Cannot autostart Discord: variable discordDir_%startDiscord% is not set.
+    )
 )
 
-if "%keepTerminalOpen%"=="1" (
-    pause
-)
-exit /b
+if "%keepTerminalOpen%"=="1" pause
+exit /b 0
