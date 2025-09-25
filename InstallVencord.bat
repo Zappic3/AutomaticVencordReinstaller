@@ -14,7 +14,7 @@ set "startDiscord=1"
 
 :: Wether to keep the Terminal open or close it after the script finishes
 :: 1 = true, 0 = false
-set "keepTerminalOpen=1"
+set "keepTerminalOpen=0"
 
 
 :: === Find Discord Installation Directory ===
@@ -23,11 +23,19 @@ set "discordNames_ptb=DiscordPTB"
 set "discordNames_canary=DiscordCanary"
 ::set "discordNames_dev=DiscordDevelopment"
 
-set "foldersToPatch="
+call :main
+exit /b
+
+:main
+:: Check AppData exists
 if not exist "%LOCALAPPDATA%\" (
     echo [ERROR] AppData directory not found
-    exit /b 1
+    set "errorOccurred=1"
+    goto :end
 )
+
+set "foldersToPatch=uadhosiuhoi"
+set "errorOccurred=0"
 
 for %%i in (%installList%) do (
     set "currentPath=%LOCALAPPDATA%\!discordNames_%%i!"
@@ -58,11 +66,9 @@ for %%i in (%installList%) do (
 
         if defined highestAppFolder (
             echo [INFO] Highest !discordNames_%%i! version folder: !highestAppFolder!
-            ::Check if Vencord is Already/Still Installed 
             if exist "!highestAppFolder!\resources\_app.asar" (
                 echo [INFO] Vencord already installed in !highestAppFolder!
             ) else (
-                :: Save Folder To Pach Later
                 echo [INFO] Vencord not installed in !highestAppFolder!
                 if defined foldersToPatch (
                     set "foldersToPatch=!foldersToPatch! !currentPath!"
@@ -76,17 +82,11 @@ for %%i in (%installList%) do (
     )
 )
 
-:: When There Are No Installations To Patch, Exit
+:: When there are no installations to patch, exit
 if not defined foldersToPatch (
-    echo [INFO] No Installations to Patch. Exitiing...
-    if "%keepTerminalOpen%"=="1" (
-        exit /b
-    ) else (
-        exit
-    )
+    echo [INFO] No Installations to Patch. Exiting...
+    goto :end
 )
-
-:: #######################################
 
 :: === Configure URL and Filename ===
 set "CLI_URL=https://github.com/Vencord/Installer/releases/latest/download/VencordInstallerCli.exe"
@@ -97,30 +97,29 @@ set "TEMP_DIR=%TEMP%\cli_temp_%RANDOM%"
 mkdir "%TEMP_DIR%"
 cd /d "%TEMP_DIR%"
 
-:: === Download Cli-File ===
+:: === Download CLI File ===
 echo [INFO] Downloading %CLI_FILE%...
 powershell -Command "Invoke-WebRequest -Uri '%CLI_URL%' -OutFile '%CLI_FILE%'"
 if not exist "%CLI_FILE%" (
     echo [ERROR] Download failed.
-    exit /b 1
+    set "errorOccurred=1"
+    goto :end
 )
 
-:: === Run CLI-File ===
+:: === Run CLI File ===
 echo [INFO] Starting %CLI_FILE%...
-
 for %%i in (%foldersToPatch%) do (
     echo [INFO] Patching "%%i"
     "%CLI_FILE%" -install "-location=%%i"
 )
 
-
-
 if errorlevel 1 (
     echo [ERROR] Running %CLI_FILE% failed.
-    exit /b 2
+    set "errorOccurred=1"
+    goto :end
 )
 
-:: === Cleaning up Temporary Directory ===
+:: === Clean up Temporary Directory ===
 echo [INFO] Deleting %CLI_FILE%...
 del "%CLI_FILE%"
 cd ..
@@ -128,10 +127,16 @@ rmdir "%TEMP_DIR%"
 
 echo [INFO] Done.
 
+:end
+
+
+if "%errorOccurred%"=="1"  (
+    pause
+) else (
+    
+)
+
 if "%keepTerminalOpen%"=="1" (
     pause
 )
-endlocal
 exit /b
-
-
