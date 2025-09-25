@@ -15,7 +15,7 @@ set "startDiscord=stable"
 
 :: Wether to keep the Terminal open or close it after the script finishes
 :: 1 = true, 0 = false
-set "keepTerminalOpen=1"
+set "keepTerminalOpen=0"
 
 
 :: === Find Discord Installation Directory ===
