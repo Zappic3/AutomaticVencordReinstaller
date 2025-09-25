@@ -24,8 +24,6 @@ This repository contains a batch script that automates the process of downloadin
 - If you have Discord set to autostart with Windows, disable that option in Discord’s settings and configure this script to run at startup instead.  
 
 
-
-
 ## How It Works
 1. **Update**: The script runs the Discord Updater, in case the newest update breaks Vencord.
 2. **Check**: Then it checks your Discord installation(s) if an update has broken Vencord. If that’s the case, it does the following:
@@ -33,6 +31,12 @@ This repository contains a batch script that automates the process of downloadin
     - **Run**: It executes the Vencord CLI to perform the installation.
     - **Cleanup**: After execution, the script removes the downloaded files to keep your system clean.
 3. **Final**: It starts Discord for you (configurable).
+
+### Optional: Custom Icon
+You can make the script look like the official Discord app:
+1. Create a shortcut to `InstallVencord.bat`.
+2. Right-click the shortcut → Properties → Change Icon.
+3. Browse to the included `discord.ico` file.
 
 ## Requirements
 
